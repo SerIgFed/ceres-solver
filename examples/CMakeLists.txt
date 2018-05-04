@@ -77,6 +77,9 @@ if (GFLAGS)
   target_link_libraries(powell ceres ${GFLAGS_LIBRARIES})
 
   add_executable(nist nist.cc)
+  if(MSVC)
+    set_target_properties(nist PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} /bigobj")
+  endif()
   target_link_libraries(nist ceres ${GFLAGS_LIBRARIES})
 
   add_executable(more_garbow_hillstrom more_garbow_hillstrom.cc)
