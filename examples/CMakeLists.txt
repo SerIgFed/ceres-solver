@@ -78,7 +78,7 @@ if (GFLAGS)
 
   add_executable(nist nist.cc)
   if(MSVC)
-    set_target_properties(nist PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS} /bigobj")
+    target_compile_options(nist PRIVATE "/bigobj")
   endif()
   target_link_libraries(nist ceres ${GFLAGS_LIBRARIES})
 
