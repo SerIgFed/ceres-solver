@@ -47,13 +47,21 @@ SOLVER_CONFIGS = [
   ('ITERATIVE_SCHUR',        'NO_SPARSE',        'JACOBI'),
   ('ITERATIVE_SCHUR',        'NO_SPARSE',        'SCHUR_JACOBI'),
   ('ITERATIVE_SCHUR',        'SUITE_SPARSE',     'CLUSTER_JACOBI'),
+  ('ITERATIVE_SCHUR',        'EIGEN_SPARSE',     'CLUSTER_JACOBI'),
+  ('ITERATIVE_SCHUR',        'CX_SPARSE',        'CLUSTER_JACOBI'),
+  ('ITERATIVE_SCHUR',        'ACCELERATE_SPARSE','CLUSTER_JACOBI'),
   ('ITERATIVE_SCHUR',        'SUITE_SPARSE',     'CLUSTER_TRIDIAGONAL'),
+  ('ITERATIVE_SCHUR',        'EIGEN_SPARSE',     'CLUSTER_TRIDIAGONAL'),
+  ('ITERATIVE_SCHUR',        'CX_SPARSE',        'CLUSTER_TRIDIAGONAL'),
+  ('ITERATIVE_SCHUR',        'ACCELERATE_SPARSE','CLUSTER_TRIDIAGONAL'),
   ('SPARSE_NORMAL_CHOLESKY', 'SUITE_SPARSE',     'IDENTITY'),
   ('SPARSE_NORMAL_CHOLESKY', 'EIGEN_SPARSE',     'IDENTITY'),
   ('SPARSE_NORMAL_CHOLESKY', 'CX_SPARSE',        'IDENTITY'),
+  ('SPARSE_NORMAL_CHOLESKY', 'ACCELERATE_SPARSE','IDENTITY'),
   ('SPARSE_SCHUR',           'SUITE_SPARSE',     'IDENTITY'),
   ('SPARSE_SCHUR',           'EIGEN_SPARSE',     'IDENTITY'),
   ('SPARSE_SCHUR',           'CX_SPARSE',        'IDENTITY'),
+  ('SPARSE_SCHUR',           'ACCELERATE_SPARSE','IDENTITY'),
 ]
 
 FILENAME_SHORTENING_MAP = dict(
@@ -65,6 +73,7 @@ FILENAME_SHORTENING_MAP = dict(
   SUITE_SPARSE='suitesparse',
   EIGEN_SPARSE='eigensparse',
   CX_SPARSE='cxsparse',
+  ACCELERATE_SPARSE='acceleratesparse',
   IDENTITY='identity',
   JACOBI='jacobi',
   SCHUR_JACOBI='schurjacobi',
@@ -122,13 +131,14 @@ namespace internal {
 TEST_F(BundleAdjustmentTest,
        %(test_class_name)s) {  // NOLINT
    BundleAdjustmentProblem bundle_adjustment_problem;
-   Solver::Options* options = bundle_adjustment_problem.mutable_solver_options();
+   Solver::Options* options =
+     bundle_adjustment_problem.mutable_solver_options();
    options->num_threads = %(num_threads)s;
    options->linear_solver_type = %(linear_solver)s;
    options->sparse_linear_algebra_library_type = %(sparse_backend)s;
    options->preconditioner_type = %(preconditioner)s;
    if (%(ordering)s) {
-    options->linear_solver_ordering.reset();
+     options->linear_solver_ordering.reset();
    }
    Problem* problem = bundle_adjustment_problem.mutable_problem();
    RunSolverForConfigAndExpectResidualsMatch(*options, problem);
@@ -187,6 +197,9 @@ def generate_bundle_test(linear_solver,
   elif sparse_backend == 'CX_SPARSE':
     preprocessor_conditions_begin.append('#ifndef CERES_NO_CXSPARSE')
     preprocessor_conditions_end.insert(0, '#endif  // CERES_NO_CXSPARSE')
+  elif sparse_backend == 'ACCELERATE_SPARSE':
+    preprocessor_conditions_begin.append('#ifndef CERES_NO_ACCELERATE_SPARSE')
+    preprocessor_conditions_end.insert(0, '#endif  // CERES_NO_ACCELERATE_SPARSE')
   elif sparse_backend == 'EIGEN_SPARSE':
     preprocessor_conditions_begin.append('#ifdef CERES_USE_EIGEN_SPARSE')
     preprocessor_conditions_end.insert(0, '#endif  // CERES_USE_EIGEN_SPARSE')
